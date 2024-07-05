@@ -26,38 +26,73 @@ export default function Home() {
   const [generatedArticles, setGeneratedArticles] = useState(null);
   const [englishArticle, setEnglishArticle] = useState(null);
   const [frenchArticle, setFrenchArticle] = useState(null);
-  const [postUrl, setPostUrl] = useState(null);
+  const [postUrlEn, setPostUrlEn] = useState(null);
+  const [postUrlFr, setPostUrlFr] = useState(null);
+  const [posted, setPosted] = useState(false);
 
 
   const postToWordPress = async () => {
     setLoading(true);
+
+    if (englishArticle) {
+      try {
+        const response = await fetch('/api/post-to-wordpress', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: englishArticle.title,
+            content: englishArticle.article,
+          }),
+        });
     
-    try {
-      const response = await fetch('/api/post-to-wordpress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: englishArticle.title,
-          content: englishArticle.article,
-        }),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        console.log('Article published successfully!');
-        console.log('View it at:', data.link);
-        setPostUrl(data.link);
-      } else {
-        console.error('Error:', data.error);
-        console.error(data.details);
+        const data = await response.json();
+    
+        if (response.ok) {
+          console.log('Article published successfully!');
+          console.log('View it at:', data.link);
+          setPostUrlEn(data.link);
+        } else {
+          console.error('Error:', data.error);
+          console.error(data.details);
+        }
+      } catch (error) {
+        console.error('Error posting to WordPress:', error);
       }
-    } catch (error) {
-      console.error('Error posting to WordPress:', error);
-    }
-      
+
+    }  
+    
+    if (frenchArticle) {
+
+      try {
+        const response = await fetch('/api/post-to-wordpress', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: frenchArticle.title,
+            content: frenchArticle.article,
+          }),
+        });
+    
+        const data = await response.json();
+    
+        if (response.ok) {
+          console.log('Article published successfully!');
+          console.log('View it at:', data.link);
+          setPostUrlFr(data.link);
+        } else {
+          console.error('Error:', data.error);
+          console.error(data.details);
+        }
+      } catch (error) {
+        console.error('Error posting to WordPress:', error);
+      }
+
+    } 
+    setPosted(true)
     setLoading(false);
   };
 
@@ -132,24 +167,28 @@ export default function Home() {
     }
   }
 
-  const handleUploadToBlog = async () => {
-    if (!englishArticle || !frenchArticle) {
-      setError('Please generate articles first.');
-      return;
-    }
+  
 
-    setLoading(true);
-    setError('');
-    try {
-      console.log('Uploading articles to blog...');
-      uploadToBlog(englishArticle, frenchArticle);
-
-    } catch (err) {
-      console.error('Error uploading articles:', err);
-      setError('Failed to upload articles to blog. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  if (posted) { 
+    return (
+      <div className="container mx-auto p-6 bg-gray-100 rounded-lg shadow-lg">
+        <h1 className="text-3xl font-bold mb-6 text-blue-600">Article Published</h1>
+        {postUrlEn && (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">English Article</h2>
+            <p className="text-gray-700 mb-4">The article has been published successfully. You can view it at the following link:</p>
+            <a href={postUrlEn} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{postUrlEn}</a>
+          </div>
+        )}
+        {postUrlFr && (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">French Article</h2>
+            <p className="text-gray-700 mb-4">The article has been published successfully. You can view it at the following link:</p>
+            <a href={postUrlFr} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{postUrlFr}</a>
+          </div>
+        )}
+      </div>
+    );
   }
 
   
