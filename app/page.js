@@ -1,9 +1,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { RadioGroup } from '@headlessui/react';
 import { getSocialData } from '@/app/actions/getSocialData';
 import { generateArticle } from '@/app/actions/generateArticle';
-import { uploadToBlog } from '@/app/actions/uploadArticles';
+
 
 const identifyPlatform = (url) => {
   if (url.includes('twitter.com') || url.includes('x.com')) return 'Twitter';
@@ -25,6 +26,42 @@ export default function Home() {
   const [generatedArticles, setGeneratedArticles] = useState(null);
   const [englishArticle, setEnglishArticle] = useState(null);
   const [frenchArticle, setFrenchArticle] = useState(null);
+  const [postUrl, setPostUrl] = useState(null);
+
+
+  const postToWordPress = async () => {
+    setLoading(true);
+    
+    try {
+      const response = await fetch('/api/post-to-wordpress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: englishArticle.title,
+          content: englishArticle.article,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        console.log('Article published successfully!');
+        console.log('View it at:', data.link);
+        setPostUrl(data.link);
+      } else {
+        console.error('Error:', data.error);
+        console.error(data.details);
+      }
+    } catch (error) {
+      console.error('Error posting to WordPress:', error);
+    }
+      
+    setLoading(false);
+  };
+
+
 
   useEffect(() => {
     if (englishArticle) {
@@ -140,7 +177,7 @@ export default function Home() {
           <p className="text-gray-700 mb-4">The article has been generated successfully. Press following button to upload them to your Blog</p>
           <button
             disabled={loading}
-            onClick={handleUploadToBlog}
+            onClick={postToWordPress}
             className="mt-4 p-2 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 focus:outline-none disabled:bg-blue-300 w-full"
           >
             {loading ? 'Loading...' : 'Upload to Blog'}
@@ -210,9 +247,11 @@ export default function Home() {
               <button
                 disabled={loading}
                 onClick={handleGenerateArticle}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2 w-full sm:w-auto"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2 w-full disabled:bg-blue-300 sm:w-auto"
               >
-                <span>Generate Article</span>
+                <span>
+                  { loading ? 'Loading...' : 'Generate Article' }
+                </span>
               </button>
             </div>
           </div>
