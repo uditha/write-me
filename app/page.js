@@ -92,8 +92,10 @@ export default function Home() {
       }
 
     } 
+    
     setPosted(true)
     setLoading(false);
+
   };
 
 

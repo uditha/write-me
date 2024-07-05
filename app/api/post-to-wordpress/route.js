@@ -19,6 +19,7 @@ export async function POST(request) {
   try {
     const response = await axios.post(url, articleData, {
       headers: {
+        'Accept': 'application/json, text/plain, */*',
         'Authorization': auth,
         'Content-Type': 'application/json',
       },
@@ -30,6 +31,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Error publishing article', details: response.data }, { status: response.status });
     }
   } catch (error) {
+    console.log(error);
     console.error('Error posting to WordPress:', error);
     return NextResponse.json({ error: 'Error posting to WordPress', details: error.message }, { status: 500 });
   }
