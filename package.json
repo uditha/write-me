@@ -11,8 +11,10 @@
   "dependencies": {
     "@headlessui/react": "^2.1.1",
     "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.4.5",
     "lucide-react": "^0.400.0",
     "next": "14.2.4",
+    "openai": "^4.52.3",
     "playwright": "^1.45.1",
     "puppeteer": "^22.12.1",
     "puppeteer-core": "^22.12.1",
