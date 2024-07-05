@@ -1,0 +1,11 @@
+{
+    "functions": {
+      "app/**/*.js": {
+        "maxDuration": 60 
+      },
+      "app/**/*.ts": {
+        "maxDuration": 60 
+      }
+    }
+}
+  
