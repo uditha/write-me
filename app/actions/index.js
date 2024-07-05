@@ -1,7 +1,7 @@
 'use server';
 
 import cheerio from 'cheerio';
-import puppeteer from 'puppeteer';
+import { chromium } from 'playwright';
 
 export async function getSocialData(url, selectedPlatform) {
 
@@ -184,22 +184,49 @@ async function fetchFromLinkedIn(url) {
 
 
 
-  async function fetchFromReddit(url) {
+//   async function fetchFromReddit(url) {
+//     try {
+//         const browser = await puppeteer.launch({ headless: false });
+//         const page = await browser.newPage();
+
+//         // Navigate the page to a URL.
+//         await page.goto(url);
+
+//         // wait for div with slot="text-body" and get the text
+//         await page.waitForSelector('div[slot="text-body"]');
+
+//         const text = await page.evaluate(() => {
+//             return document.querySelector('div[slot="text-body"]').innerText;
+//         });
+
+//         // close the browser
+//         await browser.close();
+
+//         return { text, mediaArr: [] };
+        
+//     } catch (error) {
+//         console.error('Error fetching Reddit text:', error);
+//         throw error;
+//     }
+//   } 
+
+
+async function fetchFromReddit(url) {
     try {
-        const browser = await puppeteer.launch({ headless: false });
+        const browser = await chromium.launch({ headless: false });
         const page = await browser.newPage();
 
-        // Navigate the page to a URL.
+        // Navigate the page to a URL
         await page.goto(url);
 
-        // wait for div with slot="text-body" and get the text
+        // Wait for div with slot="text-body" and get the text
         await page.waitForSelector('div[slot="text-body"]');
 
         const text = await page.evaluate(() => {
             return document.querySelector('div[slot="text-body"]').innerText;
         });
 
-        // close the browser
+        // Close the browser
         await browser.close();
 
         return { text, mediaArr: [] };
@@ -208,4 +235,4 @@ async function fetchFromLinkedIn(url) {
         console.error('Error fetching Reddit text:', error);
         throw error;
     }
-  } 
+}
