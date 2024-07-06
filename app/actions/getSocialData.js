@@ -154,6 +154,8 @@ async function fetchTweetTextFromTwitter(tweetId) {
                 type: media.type
             }
         });
+
+        console.log(mediaArr);
        
         return { text, mediaArr };
     } catch (error) {

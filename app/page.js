@@ -35,16 +35,26 @@ export default function Home() {
     setLoading(true);
 
     if (englishArticle) {
+
+      let dataObject = {
+        title: englishArticle.title,
+        content: englishArticle.article,
+      }
+
+      if (englishArticle.media && englishArticle.media.length > 0) { 
+        dataObject.imageUrl = englishArticle.media[0].media_url_https;
+      } else {
+        dataObject.imageUrl = null;
+      }
+
       try {
         const response = await fetch('/api/post-to-wordpress', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            title: englishArticle.title,
-            content: englishArticle.article,
-          }),
+
+          body: JSON.stringify(dataObject),
         });
     
         const data = await response.json();
@@ -65,16 +75,24 @@ export default function Home() {
     
     if (frenchArticle) {
 
+      let dataObject = {
+        title: frenchArticle.title,
+        content: frenchArticle.article,
+      }
+
+      if (frenchArticle.media && frenchArticle.media.length > 0) { 
+        dataObject.imageUrl = frenchArticle.media[0].media_url_https;
+      } else {
+        dataObject.imageUrl = null;
+      }
+
       try {
         const response = await fetch('/api/post-to-wordpress', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            title: frenchArticle.title,
-            content: frenchArticle.article,
-          }),
+          body: JSON.stringify(dataObject),
         });
     
         const data = await response.json();
@@ -134,6 +152,38 @@ export default function Home() {
     }
   };
 
+  function generateMediaText(socialData) {
+    const photos = [];
+    const videos = [];
+  
+    socialData.media.forEach(media => {
+      if (media.type === 'photo') {
+        photos.push(`![Image](${media.media_url_https})`);
+      } else if (media.type === 'video') {
+        videos.push(`[Video](${media.media_url_https})`);
+      }
+    });
+  
+    let content = '';
+    
+    if (photos.length > 0) {
+      content += 'Here are some images for you to analyze:\n';
+      photos.forEach((photo, index) => {
+        content += `${index + 1}. ${photo}\n`;
+      });
+    }
+  
+    if (videos.length > 0) {
+      if (content.length > 0) content += '\n';  // Add a newline if there are photos
+      content += 'Here are some video links:\n';
+      videos.forEach((video, index) => {
+        content += `${index + 1}. ${video}\n`;
+      });
+    }
+  
+    return content;
+  }
+
   const handleGenerateArticle = async () => {
     if (!socialData) {
       setError('Please fetch social media data first.');
@@ -146,7 +196,8 @@ export default function Home() {
       console.log('Generating article...');
       console.log('Selected language:', selectedLanguage);
 
-      const mediaUrls = socialData.media.map(media => media.media_url_https);
+      // const mediaUrls = socialData.media.map(media => media.media_url_https);
+      const mediaUrls = generateMediaText(socialData);
       const articles = await generateArticle(socialData.text, mediaUrls, selectedLanguage);
 
       if (selectedLanguage === 'english') {

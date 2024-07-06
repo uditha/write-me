@@ -39,7 +39,7 @@ async function generateResponse(socialMediaText, mediaUrls, language) {
 async function addMessage(threadId, socialMediaText, mediaUrls, language) {
   try {
     let prompt;
-    const mediaUrlsString = mediaUrls.join(', ');
+    const mediaUrlsString = mediaUrls;
     
     switch(language) {
       case 'french':
@@ -52,6 +52,8 @@ async function addMessage(threadId, socialMediaText, mediaUrls, language) {
       default:
         prompt = `Generate an article in English based on the following tweet: "${socialMediaText}" and the associated media URLs: ${mediaUrlsString}. Use JSON Structure 1 for output.`;
     }
+
+    console.log(prompt);
 
     await openai.beta.threads.messages.create(threadId, {
       role: 'user',
