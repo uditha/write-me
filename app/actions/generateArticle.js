@@ -46,11 +46,11 @@ async function addMessage(threadId, socialMediaText, mediaUrls, language) {
         prompt = `Générez un article en français basé sur le tweet suivant : "${socialMediaText}" et les URLs des médias associés : ${mediaUrlsString}. Utilisez la structure JSON 1 pour la sortie.`;
         break;
       case 'both':
-        prompt = `Generate articles in both English and French based on the following tweet: "${socialMediaText}" and the associated media URLs: ${mediaUrlsString}. Use JSON Structure 2 for output.`;
+        prompt = `Generate COMPLETLY DIFFERENT  articles in both English and French based on the following tweet: "${socialMediaText}".The associated media URLs: ${mediaUrlsString}. Artile should have different strucure for GOOGLE SEO purpose. DO NOT TRANSLATE. English for targeting UK audience. Use JSON Structure 2 for output.`;
         break;
       case 'english':
       default:
-        prompt = `Generate an article in English based on the following tweet: "${socialMediaText}" and the associated media URLs: ${mediaUrlsString}. Use JSON Structure 1 for output.`;
+        prompt = `Generate an article in English based on the following tweet: "${socialMediaText}" and the associated media URLs: ${mediaUrlsString}. English for targeting UK audience. Use JSON Structure 1 for output.`;
     }
 
     console.log(prompt);
