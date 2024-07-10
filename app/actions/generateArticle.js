@@ -11,46 +11,91 @@ export async function generateArticle(socialMediaText, mediaUrls, language) {
     console.log('Media URLs:', mediaUrls);
     console.log('Language:', language);
 
-    const articleObject = await generateResponse(socialMediaText, mediaUrls, language);
+    let articleObject = {};
+
+    switch (language) {
+      case 'french':
+        const frenchArticle = await generateFrenchArticle(socialMediaText, mediaUrls);
+        articleObject = { fr: frenchArticle.fr };
+        break;
+      case 'english':
+        const englishArticle = await generateEnglishArticle(socialMediaText, mediaUrls);
+        articleObject = { en: englishArticle.en };
+        break;
+      case 'both':
+        const frenchResult = await generateFrenchArticle(socialMediaText, mediaUrls);
+        const englishResult = await generateEnglishFromFrench(frenchResult.fr);
+        articleObject = { 
+          fr: frenchResult.fr,
+          en: englishResult.en
+        };
+        break;
+      default:
+        throw new Error('Invalid language option');
+    }
 
     console.log('Article on Server:', articleObject);
 
     return articleObject;
-    
-    
   } catch (error) {
     console.error('Error generating article:', error);
     throw new Error('Error generating article');
   }
 }
 
-async function generateResponse(socialMediaText, mediaUrls, language) {
+async function generateFrenchArticle(socialMediaText, mediaUrls) {
   try {
     const thread = await openai.beta.threads.create();
-    await addMessage(thread.id, socialMediaText, mediaUrls, language);
+    await addMessage(thread.id, socialMediaText, mediaUrls, 'french');
     const response = await runAssistant(thread.id);
     return response;
   } catch (error) {
-    console.error('Error generating response:', error);
+    console.error('Error generating French article:', error);
     throw error;
   }
 }
 
-async function addMessage(threadId, socialMediaText, mediaUrls, language) {
+async function generateEnglishArticle(socialMediaText, mediaUrls) {
+  try {
+    const thread = await openai.beta.threads.create();
+    await addMessage(thread.id, socialMediaText, mediaUrls, 'english');
+    const response = await runAssistant(thread.id);
+    return response;
+  } catch (error) {
+    console.error('Error generating English article:', error);
+    throw error;
+  }
+}
+
+async function generateEnglishFromFrench(frenchArticle) {
+  try {
+    const thread = await openai.beta.threads.create();
+    await addMessage(thread.id, JSON.stringify(frenchArticle), '', 'english_from_french');
+    const response = await runAssistant(thread.id);
+    return response;
+  } catch (error) {
+    console.error('Error generating English article from French:', error);
+    throw error;
+  }
+}
+
+async function addMessage(threadId, content, mediaUrls, type) {
   try {
     let prompt;
     const mediaUrlsString = mediaUrls;
     
-    switch(language) {
+    switch(type) {
       case 'french':
-        prompt = `Générez un article en français basé sur le tweet suivant : "${socialMediaText}" et les URLs des médias associés : ${mediaUrlsString}. Utilisez la structure JSON 1 pour la sortie.`;
-        break;
-      case 'both':
-        prompt = `Generate COMPLETLY DIFFERENT  articles in both English and French based on the following tweet: "${socialMediaText}".The associated media URLs: ${mediaUrlsString}. Artile should have different strucure for GOOGLE SEO purpose. DO NOT TRANSLATE. English for targeting UK audience. Use JSON Structure 2 for output.`;
+        prompt = `Générez un article en français basé sur le tweet suivant : "${content}" et les URLs des médias associés : ${mediaUrlsString}. Utilisez la structure JSON suivante pour la sortie : { "fr": { "title": "Titre de l'article", "article": "Contenu de l'article" } }`;
         break;
       case 'english':
+        prompt = `Generate an article in English based on the following tweet: "${content}" and the associated media URLs: ${mediaUrlsString}. Target a UK audience. Use the following JSON structure for the output: { "en": { "title": "Article title", "article": "Article content" } }`;
+        break;
+      case 'english_from_french':
+        prompt = `Generate a COMPLETELY DIFFERENT article structure in English based on the following French article: ${content}. The article should have a different structure for GOOGLE SEO purposes. DO NOT TRANSLATE. Target a UK audience. Use the following JSON structure for the output: { "en": { "title": "Article title", "article": "Article content" } }`;
+        break;
       default:
-        prompt = `Generate an article in English based on the following tweet: "${socialMediaText}" and the associated media URLs: ${mediaUrlsString}. English for targeting UK audience. Use JSON Structure 1 for output.`;
+        throw new Error('Invalid message type');
     }
 
     console.log(prompt);
