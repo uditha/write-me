@@ -24,7 +24,7 @@ export async function generateArticle(socialMediaText, mediaUrls, language) {
         break;
       case 'both':
         const frenchResult = await generateFrenchArticle(socialMediaText, mediaUrls);
-        const englishResult = await generateEnglishFromFrench(frenchResult.fr);
+        const englishResult = await generateEnglishFromFrench(socialMediaText, mediaUrls);
         articleObject = { 
           fr: frenchResult.fr,
           en: englishResult.en
@@ -67,10 +67,10 @@ async function generateEnglishArticle(socialMediaText, mediaUrls) {
   }
 }
 
-async function generateEnglishFromFrench(frenchArticle) {
+async function generateEnglishFromFrench(socialMediaText, mediaUrls) {
   try {
     const thread = await openai.beta.threads.create();
-    await addMessage(thread.id, JSON.stringify(frenchArticle), '', 'english_from_french');
+    await addMessage(thread.id, socialMediaText, mediaUrls, 'english_from_french');
     const response = await runAssistant(thread.id);
     return response;
   } catch (error) {
@@ -86,13 +86,13 @@ async function addMessage(threadId, content, mediaUrls, type) {
     
     switch(type) {
       case 'french':
-        prompt = `Générez un article en français basé sur le tweet suivant : "${content}" et les URLs des médias associés : ${mediaUrlsString}. Utilisez la structure JSON suivante pour la sortie : { "fr": { "title": "Titre de l'article", "article": "Contenu de l'article" } }`;
+        prompt = `Générez un article en français basé sur le tweet suivant : "${content}" et les URLs des médias associés : ${mediaUrlsString}. Utilisez la structure JSON suivante pour la sortie : { "fr": { "title": "Titre de l'article", "article": "Contenu de l'article avec des balises HTML pour la structure" } }`;
         break;
       case 'english':
-        prompt = `Generate an article in English based on the following tweet: "${content}" and the associated media URLs: ${mediaUrlsString}. Target a UK audience. Use the following JSON structure for the output: { "en": { "title": "Article title", "article": "Article content" } }`;
+        prompt = `Generate an article in English based on the following tweet: "${content}" and the associated media URLs: ${mediaUrlsString}. Target a UK audience. Use the following JSON structure for the output: { "en": { "title": "Article title", "article": "Article content with HTML tags for structure" } }`;
         break;
       case 'english_from_french':
-        prompt = `Generate a COMPLETELY DIFFERENT article structure in English based on the following French article: ${content}. The article should have a different structure for GOOGLE SEO purposes. DO NOT TRANSLATE. Target a UK audience. Title and H2 must not match an exact translation. Use the following JSON structure for the output: { "en": { "title": "Article title", "article": "Article content" } }`;
+        prompt = `Generate a COMPLETELY DIFFERENT article in English based on the core idea from this tweet: "${content}" and the associated media URLs: ${mediaUrlsString}. The article should have a different title, different h2 headings, and a completely different structure from a potential French version. Focus on creating unique content that would appeal to a UK audience and be optimized for Google SEO. DO NOT TRANSLATE any existing content. Instead, create an entirely new article that explores the same core topic but from a fresh perspective. Use the following JSON structure for the output: { "en": { "title": "Unique English article title", "article": "Unique English article content with HTML tags for structure" } }`;
         break;
       default:
         throw new Error('Invalid message type');
