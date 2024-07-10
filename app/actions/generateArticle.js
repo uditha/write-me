@@ -92,7 +92,7 @@ async function addMessage(threadId, content, mediaUrls, type) {
         prompt = `Generate an article in English based on the following tweet: "${content}" and the associated media URLs: ${mediaUrlsString}. Target a UK audience. Use the following JSON structure for the output: { "en": { "title": "Article title", "article": "Article content" } }`;
         break;
       case 'english_from_french':
-        prompt = `Generate a COMPLETELY DIFFERENT article structure in English based on the following French article: ${content}. The article should have a different structure for GOOGLE SEO purposes. DO NOT TRANSLATE. Target a UK audience. Use the following JSON structure for the output: { "en": { "title": "Article title", "article": "Article content" } }`;
+        prompt = `Generate a COMPLETELY DIFFERENT article structure in English based on the following French article: ${content}. The article should have a different structure for GOOGLE SEO purposes. DO NOT TRANSLATE. Target a UK audience. Title and H2 must not match an exact translation. Use the following JSON structure for the output: { "en": { "title": "Article title", "article": "Article content" } }`;
         break;
       default:
         throw new Error('Invalid message type');
